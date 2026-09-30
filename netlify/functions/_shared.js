@@ -33,3 +33,16 @@ function makeToken(email, secret, days) {
   return p + '.' + sign(p, secret);
 }
 function verifyToken(token, secret) {
+  if (!token || typeof token !== 'string' || token.indexOf('.') === -1) return null;
+  const [p, sig] = token.split('.');
+  if (sign(p, secret) !== sig) return null;
+  try {
+    const payload = JSON.parse(unb64url(p).toString());
+    if (!payload.email || !payload.exp || payload.exp < Date.now()) return null;
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+module.exports = { hashPassword, verifyPassword, makeToken, verifyToken };
